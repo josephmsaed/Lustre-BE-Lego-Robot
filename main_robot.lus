@@ -1,0 +1,248 @@
+--------------------------------------------------------------------------------
+-- BE Robot Lego Mindstorms EV3
+-- Firstname and Name:
+-- ISAE MAE-ES – 2022-2023
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- Constant values
+--------------------------------------------------------------------------------
+-- Declare constants if needed:
+-- example: 
+-- const DARK int;
+
+
+--------------------------------------------------------------------------------
+-- Main node
+--------------------------------------------------------------------------------
+-- Inputs:
+--   sensors 1 to 4 (from ports IN1 to IN4)
+--   speed of motors A to B (from ports OUTA to OUTD)
+-- Assumption:
+--   sensor_1 = right touch sensor
+--   sensor_4 = left touch sensor
+--   sensor_2 = color sensor
+--   sensor_3 = utrasonic sensor
+--   motor_speed_sensor_a = speed of motor A (right wheel)
+--   motor_speed_sensor_b = speed of motor B (left wheel)
+--   motor_speed_sensor_c = speed of motor C (engine to turn the ultrasonic sensor right and left)
+--   no motor on output port D
+--------------------------------------------------------------------------------
+node main_robot (
+		sensor_1 : bool ;
+		sensor_2 : int ;
+		sensor_3 : int ;
+		sensor_4 : bool ;
+		motor_speed_sensor_a : int ;
+		motor_speed_sensor_b : int ;
+		motor_speed_sensor_c : int ;
+		motor_speed_sensor_d : int ;
+		)
+--------------------------------------------------------------------------------
+-- Outputs:
+--   Required rotation direction for each motor (clockwise versus counterclockwise)
+--   Required command mode for each motor (speed versus position)
+--   Required value of the command for each motor
+-- Assumption
+--   Motor_A = right wheel
+--   Motor_B = left wheel
+--   Motor_C = engine to turn the ultrasonic sensor right and left
+--   no motor on output port D
+--------------------------------------------------------------------------------
+returns (
+	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
+	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
+	Clockwise_C : bool; Counterclockwise_C : bool; Cmd_Position_C : bool ; Cmd_Speed_C : bool; Value_C : int; 
+	Clockwise_D : bool; Counterclockwise_D : bool; Cmd_Position_D : bool ; Cmd_Speed_D : bool; Value_D : int; 
+	);
+--------------------------------------------------------------------------------
+var counter: int;
+let
+
+counter  = 0 ->(pre counter) + 1;
+
+(Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
+Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B, Value_B) = Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b) -> 
+		if (counter < 1000) 
+		then Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+
+		else if (counter > 1100 and counter < 1500) then Backward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+
+		else if (counter > 1600 and counter < 2100) then Right(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+
+		else if (counter > 2200  and counter < 2500) then Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+		else Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b);
+
+Clockwise_C = false;
+Counterclockwise_C = false;
+Cmd_Position_C = false;
+Cmd_Speed_C = true;
+Value_C = 0;
+
+Clockwise_D = false;
+Counterclockwise_D = false;
+Cmd_Position_D = false;
+Cmd_Speed_D = true;
+Value_D = 0;
+
+tel	
+--------------------------------------------------------------------------------
+	
+
+
+--------------------------------------------------------------------------------
+-- Place other nodes below if needed
+
+node Forward(sensor_1 : bool ;
+		sensor_2 : int ;
+		sensor_3 : int ;
+		sensor_4 : bool ;
+		motor_speed_sensor_a : int ;
+		motor_speed_sensor_b : int ;
+		)
+returns (
+	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
+	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
+	);
+
+let
+
+--Right Wheel
+Clockwise_A = true ;
+Counterclockwise_A = false;
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Value_A = 50;
+
+--Left Wheel
+Clockwise_B = true;
+Counterclockwise_B = false;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
+Value_B = 50;
+
+tel;
+
+node Backward(sensor_1 : bool ;
+		sensor_2 : int ;
+		sensor_3 : int ;
+		sensor_4 : bool ;
+		motor_speed_sensor_a : int ;
+		motor_speed_sensor_b : int ;
+		)
+returns (
+	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
+	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
+
+	);
+
+let
+
+--Right Wheel
+Clockwise_A = false ;
+Counterclockwise_A = true;
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Value_A = 30;
+
+--Left Wheel
+Clockwise_B = false;
+Counterclockwise_B = true;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
+Value_B = 30;
+
+tel;
+
+node Left(sensor_1 : bool ;
+		sensor_2 : int ;
+		sensor_3 : int ;
+		sensor_4 : bool ;
+		motor_speed_sensor_a : int ;
+		motor_speed_sensor_b : int ;
+		)
+returns (
+	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
+	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
+
+	);
+
+let
+
+--Right Wheel
+Clockwise_A = true ;
+Counterclockwise_A = false;
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Value_A = 30;
+
+--Left Wheel
+Clockwise_B = false;
+Counterclockwise_B = true;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
+Value_B = 30;
+
+tel;
+
+node Right(sensor_1 : bool ;
+		sensor_2 : int ;
+		sensor_3 : int ;
+		sensor_4 : bool ;
+		motor_speed_sensor_a : int ;
+		motor_speed_sensor_b : int ;
+		)
+returns (
+	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
+	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
+
+	);
+
+let
+
+--Right Wheel
+Clockwise_A = false ;
+Counterclockwise_A = true;
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Value_A = 30;
+
+--Left Wheel
+Clockwise_B = true;
+Counterclockwise_B = false;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
+Value_B = 30;
+
+tel;
+
+node Stop(bool_: bool;
+		)
+returns (
+	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
+	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
+
+	);
+
+let
+
+--Right Wheel
+Clockwise_A = false;
+Counterclockwise_A = false;
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Value_A = 0;
+
+--Left Wheel
+Clockwise_B = false;
+Counterclockwise_B = false;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
+Value_B = 0;
+
+tel;
+
+
+
+
