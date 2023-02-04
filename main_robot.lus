@@ -58,33 +58,42 @@ returns (
 	);
 --------------------------------------------------------------------------------
 var counter: int;
+var _:bool
 let
-
-counter  = 0 ->(pre counter) + 1;
+_ = false;
+counter  = 0 -> if (pre(counter) > 99) then 0
+		else pre(counter) + 1;
 
 (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
-Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B, Value_B) = Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b) -> 
-		if (counter < 1000) 
-		then Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B, 
+Value_B) = Stop(_) -> if (counter < 69) then Forward(_)
+			else if (counter >=69 and counter < 79) then Backward(_)
+			else if (counter >=79 and counter <=100)
+			else Stop(_);				
 
-		else if (counter > 1100 and counter < 1500) then Backward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+--(Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
+--Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B, Value_B) = Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b) -> 
+--		if (counter < 1000) 
+--		then Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
 
-		else if (counter > 1600 and counter < 2100) then Right(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+--		else if (counter > 1100 and counter < 1500) then Backward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
 
-		else if (counter > 2200  and counter < 2500) then Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
-		else Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b);
+--		else if (counter > 1600 and counter < 2100) then Right(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
 
-Clockwise_C = false;
-Counterclockwise_C = false;
-Cmd_Position_C = false;
-Cmd_Speed_C = true;
-Value_C = 0;
+--		else if (counter > 2200  and counter < 2500) then Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b)
+--		else Forward(sensor_1,sensor_2 ,sensor_3,sensor_4,motor_speed_sensor_a ,motor_speed_sensor_b);
 
-Clockwise_D = false;
-Counterclockwise_D = false;
-Cmd_Position_D = false;
-Cmd_Speed_D = true;
-Value_D = 0;
+--Clockwise_C = false;
+--Counterclockwise_C = false;
+--Cmd_Position_C = false;
+--Cmd_Speed_C = true;
+--Value_C = 0;
+
+--Clockwise_D = false;
+--Counterclockwise_D = false;
+--Cmd_Position_D = false;
+--Cmd_Speed_D = true;
+--Value_D = 0;
 
 tel	
 --------------------------------------------------------------------------------
@@ -94,151 +103,127 @@ tel
 --------------------------------------------------------------------------------
 -- Place other nodes below if needed
 
-node Forward(sensor_1 : bool ;
-		sensor_2 : int ;
-		sensor_3 : int ;
-		sensor_4 : bool ;
-		motor_speed_sensor_a : int ;
-		motor_speed_sensor_b : int ;
-		)
+node Forward(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
 	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
 	);
 
 let
+
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
 
 --Right Wheel
 Clockwise_A = true ;
 Counterclockwise_A = false;
-Cmd_Position_A = false;
-Cmd_Speed_A = true;
-Value_A = 50;
+Value_A = 0 -> 80;
 
 --Left Wheel
 Clockwise_B = true;
 Counterclockwise_B = false;
-Cmd_Position_B = false;
-Cmd_Speed_B = true;
-Value_B = 50;
+Value_B = 0 -> 80;
 
 tel;
 
-node Backward(sensor_1 : bool ;
-		sensor_2 : int ;
-		sensor_3 : int ;
-		sensor_4 : bool ;
-		motor_speed_sensor_a : int ;
-		motor_speed_sensor_b : int ;
-		)
+node Backward(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
-	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
-
+	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int;
 	);
 
 let
+
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
 
 --Right Wheel
 Clockwise_A = false ;
 Counterclockwise_A = true;
-Cmd_Position_A = false;
-Cmd_Speed_A = true;
-Value_A = 30;
+Value_A = 0 -> 40;
 
 --Left Wheel
 Clockwise_B = false;
 Counterclockwise_B = true;
-Cmd_Position_B = false;
-Cmd_Speed_B = true;
-Value_B = 30;
+Value_B = 0 -> 40;
 
 tel;
 
-node Left(sensor_1 : bool ;
-		sensor_2 : int ;
-		sensor_3 : int ;
-		sensor_4 : bool ;
-		motor_speed_sensor_a : int ;
-		motor_speed_sensor_b : int ;
-		)
+node Left(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
 	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
-
 	);
 
 let
+
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
 
 --Right Wheel
 Clockwise_A = true ;
 Counterclockwise_A = false;
-Cmd_Position_A = false;
-Cmd_Speed_A = true;
-Value_A = 30;
+Value_A = 0 -> 30;
 
 --Left Wheel
 Clockwise_B = false;
 Counterclockwise_B = true;
-Cmd_Position_B = false;
-Cmd_Speed_B = true;
-Value_B = 30;
+Value_B = 0 -> 30;
 
 tel;
 
-node Right(sensor_1 : bool ;
-		sensor_2 : int ;
-		sensor_3 : int ;
-		sensor_4 : bool ;
-		motor_speed_sensor_a : int ;
-		motor_speed_sensor_b : int ;
-		)
+node Right(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
 	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
-
 	);
 
 let
+
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
 
 --Right Wheel
 Clockwise_A = false ;
 Counterclockwise_A = true;
-Cmd_Position_A = false;
-Cmd_Speed_A = true;
-Value_A = 30;
+Value_A = 0 -> 30;
 
 --Left Wheel
 Clockwise_B = true;
 Counterclockwise_B = false;
-Cmd_Position_B = false;
-Cmd_Speed_B = true;
-Value_B = 30;
+Value_B = 0 -> 30;
 
 tel;
 
-node Stop(bool_: bool;
-		)
+node Stop(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
 	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
-
 	);
 
 let
+
+Cmd_Position_A = false;
+Cmd_Speed_A = true;
+Cmd_Position_B = false;
+Cmd_Speed_B = true;
 
 --Right Wheel
 Clockwise_A = false;
 Counterclockwise_A = false;
-Cmd_Position_A = false;
-Cmd_Speed_A = true;
 Value_A = 0;
 
 --Left Wheel
 Clockwise_B = false;
 Counterclockwise_B = false;
-Cmd_Position_B = false;
-Cmd_Speed_B = true;
 Value_B = 0;
 
 tel;
