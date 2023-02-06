@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 -- BE Robot Lego Mindstorms EV3
--- Firstname and Name:
+-- Firstname and Name:  Ronan KEANE, Joseph MSAED
 -- ISAE MAE-ES – 2022-2023
 --------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ returns (
 var _, reset, force_stop: bool;
 var state, count: int;
 var T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L: bool;
-
+var T_toAuto1, T_fromAuto1: bool;
 let
 
 --counter  = 0 -> if (pre(counter) > 99) then 0
@@ -129,8 +129,10 @@ T_L_S = false -> if (force_stop) then true
 	else false;
 T_S_L = false;
 
+T_toAuto1 = false;
+T_fromAuto1 =false;
 
-state = Automata_1(T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L);
+state = Automata_1(T_toAuto1, T_fromAuto1, T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L);
 
 (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
 Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B, 
@@ -151,47 +153,108 @@ tel
 
 --------------------------------------------------------------------------------
 -- Place other nodes below if needed
-node Automata_1(T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L : bool)
+
+node Automata_M3(T_toAutomata_M3, T_fromAutomata_M3: bool)
+returns(state_M3: int);
+var init: bool;
+var S_automata_M3: bool;
+
+let
+
+S_automata_M3 = false ->if (pre S_automata_M3 and T_fromAutomata_M3)
+				then false
+			else if (not pre S_automata_M3 and T_toAutomata_M3)
+				then true
+			else pre S_automata_M3;
+
+tel
+
+
+
+node Automata_1(T_toAutomata_1, T_fromAutomata_1, T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L : bool)
 returns(state: int);
 
 var init, init_stop: bool;
 var S_FW, S_BW, S_R, S_L, S_S: bool;
-
+var S_automata_1: bool;
 let
 init = false;
 init_stop = true;
 
-S_FW = init -> if (pre(S_FW) and T_FW_S) then false
-		else if (pre(S_S) and T_S_FW) then true
-		else pre(S_FW);
-		
-S_BW = init -> if (pre(S_BW) and T_BW_S) then false
-		else if (pre(S_S) and T_S_BW) then true
-		else pre(S_BW);
+S_automata_1 = true -> if (pre S_automata_1 and T_fromAutomata_1)
+                then false
+            else if (not pre S_automata_1 and T_toAutomata_1)
+                then true
+            else pre S_automata_1;
 
-S_L = init -> if (pre(S_L) and T_L_S) then false
-		else if pre(S_S) and T_S_L then true
-		else pre(S_L);
 
-S_R = init -> if (pre(S_R) and T_R_S) then false
-		else if pre(S_S) and T_S_R then true
-		else pre(S_R);
+S_FW = if S_automata_1 then
+            init -> if (pre(S_FW) and T_FW_S) then false
+		    else if (pre(S_S) and T_S_FW) then true
+		    else pre(S_FW)
+        else false;
+        
+S_BW = if S_automata_1 then
+            init -> if (pre(S_BW) and T_BW_S) then false
+		    else if (pre(S_S) and T_S_BW) then true
+	        else pre(S_BW)
+        else false;
+
+S_L = if S_automata_1 then
+            init -> if (pre(S_L) and T_L_S) then false
+		    else if pre(S_S) and T_S_L then true
+		    else pre(S_L)
+	    else false;
+
+S_R = if S_automata_1 then
+            init -> if (pre(S_R) and T_R_S) then false
+		    else if pre(S_S) and T_S_R then true
+		    else pre(S_R)
+	    else false;
 		
 		
-S_S = init_stop -> if (pre(S_S) and (T_S_FW or T_S_BW or T_S_R or T_S_L)) then false	
-		else if ((pre(S_FW) and T_FW_S)
-			or (pre(S_BW) and T_BW_S)
-			or (pre(S_L) and T_L_S)
-			or (pre(S_R) and T_R_S))
-			then true
-		else pre(S_S);		
+S_S = if S_automata_1 then
+            init_stop -> if (pre(S_S) and (T_S_FW or T_S_BW or T_S_R or T_S_L)) then false	
+		    else if ((pre(S_FW) and T_FW_S)
+			    or (pre(S_BW) and T_BW_S)
+			    or (pre(S_L) and T_L_S)
+			    or (pre(S_R) and T_R_S))
+			        then true
+		    else pre(S_S)		
+        else false;
+
+--S_FW = init -> if (pre(S_FW) and T_FW_S) then false
+--		else if (pre(S_S) and T_S_FW) then true
+--		else pre(S_FW);
+		
+--S_BW = init -> if (pre(S_BW) and T_BW_S) then false
+--		else if (pre(S_S) and T_S_BW) then true
+--		else pre(S_BW);
+
+--S_L = init -> if (pre(S_L) and T_L_S) then false
+--		else if pre(S_S) and T_S_L then true
+--		else pre(S_L);
+
+--S_R = init -> if (pre(S_R) and T_R_S) then false
+--		else if pre(S_S) and T_S_R then true
+--		else pre(S_R);
+		
+		
+--S_S = init_stop -> if (pre(S_S) and (T_S_FW or T_S_BW or T_S_R or T_S_L)) then false	
+--		else if ((pre(S_FW) and T_FW_S)
+--			or (pre(S_BW) and T_BW_S)
+--			or (pre(S_L) and T_L_S)
+--			or (pre(S_R) and T_R_S))
+--			then true
+--		else pre(S_S);		
 
 state = 0 -> if S_S then 0
 	else if S_FW then 1
 	else if S_BW then 2
 	else if S_R then 3
 	else if S_L then 4
-	else pre(state);
+	else if not S_automata_1 then 10
+    else pre(state);
 tel
 
 node Forward(_: bool)
