@@ -98,7 +98,10 @@ returns(state: int);
 
 var init, init_stop: bool;
  count: int;
+ count_bumper: int;
+ count_idle: int;
  reset: bool;
+ idle: bool;
  right_bumper_hit: bool;
  left_bumper_hit: bool;
  obstacle: bool;
@@ -112,9 +115,18 @@ init_stop = true;
 reset = false -> if (pre count = 305) then true
 		else false;
 
+reset_idle = false -> if (pre count_idle = 355) then true
+		else false;
+
 right_bumper_hit = false -> Switch(sensor_1, reset);  
 left_bumper_hit = false -> Switch(sensor_4, reset);    
 obstacle_detected = false -> Switch(sensor_3 <= 200 , reset_ultra);  
+
+idle = not (right_bumper_hit or left_bumper_hit or obstacle_detected);
+
+count_idle = 0-> if (idle) then Counter(reset_idle) 
+			else if force_stop then pre count_idle
+			else 0;
 
 count_ultra = 0-> if (obstacle_detected) then Counter(reset_ultra) 
 			else 0;
@@ -127,13 +139,13 @@ count_bumper = 0-> if (right_bumper_hit or left_bumper_hit) then Counter(reset)
 			else if force_stop then pre count_bumper
 			else 0;
 
-S_FW = init -> if  not(right_bumper_hit or left_bumper_hit) and not force_stop then true
+S_FW = init -> if  (idle) and (count_idle > 5 and count_idle < 200) then true
 				else false;
 
-S_BW = init -> if ((right_bumper_hit or left_bumper_hit) and count_bumper > 5 and count_bumper < 200) and not force_stop then true
+S_BW = init -> if ((idle) and (count_idle > 205 and count_idle < 250)) or (((right_bumper_hit or left_bumper_hit) and count_bumper > 5 and count_bumper < 200) and not force_stop) then true
 				else false;
 
-S_L = init -> if (right_bumper_hit and count_bumper > 205 and count_bumper < 300) and not force_stop then true
+S_L = init -> if ((idle) and (count_idle > 255 and count_idle < 350)) or (right_bumper_hit and count_bumper > 205 and count_bumper < 300) and not force_stop then true
 				else false;
 
 S_R = init -> if (left_bumper_hit and count_bumper > 205 and count_bumper < 300) and not force_stop then true
