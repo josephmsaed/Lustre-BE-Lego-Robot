@@ -68,13 +68,11 @@ let
 Clockwise_C = false; Counterclockwise_C = false; Cmd_Position_C = false; Cmd_Speed_C = false; Value_C = 0; 
 Clockwise_D = false; Counterclockwise_D = false; Cmd_Position_D = false ; Cmd_Speed_D = false; Value_D =0; 
 
+--Filler value for the movement nodes. Never changes.
 _ = false;
 
---sensor_status = SwitchPrototype(reset_switch, sensor_1, sensor_4);
---sensor_1_persis = Switch(sensor_1, reset_switch);
-ESTOP = false -> if sensor_1 or sensor_4 then true
-					else pre ESTOP;
 
+-- state = enumerated value to determines the movement of the robot
 state = Automata_0( sensor_1, sensor_4, sensor_3,sensor_2);
 
 (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
@@ -87,68 +85,98 @@ Value_B) = if state = 0 then Stop(_)
 		else Stop(_);
 	tel	
 --------------------------------------------------------------------------------
-	
-
 
 --------------------------------------------------------------------------------
--- Place other nodes below if needed
-
 node Automata_0(sensor_1, sensor_4: bool; sensor_3,sensor_2: int)
+--Output: state = enumerated value to determines the movement of the robot in MAIN
 returns(state: int);
 
 var init, init_stop: bool;
- count: int;
- count_bumper: int;
- count_idle: int;
- reset: bool;
- idle: bool;
- right_bumper_hit: bool;
- left_bumper_hit: bool;
- obstacle: bool;
+
+--Counters that determine the duration of each state
+ count_bumper, count_idle, count_ultra: int;
+
+--Reset variables that reset the counters and reinitialise the Robot's state
+ reset_idle, reset_bumper, reset_ultra : bool;
+
+--Conditions that trigger the transition to different states for the robot
+--   idle = Robot performs its default path (Moves Forward -> Stops -> Reverses -> Stops -> Turns Left -> Stops )
+--   right_bumper_hit = right bumper is hit
+--   left_bumper_hit = left bumper is hit
+--   obstacle_detected = Ultrasound detects an obstacle
+ idle, right_bumper_hit, left_bumper_hit, obstacle_detected: bool;
+
+--Condition for stopping the robot's movement 
+-- if the color sensor detects black
+-- if the ultrasound sensor detects an obstacle 20 cm away
  force_stop: bool;
+
+--Conditions to determine the robots movement:
+--   S_FW = Robot moves forward
+--   S_BW = Robot moves backward
+--   S_R = Robot turns right
+--   S_L = Robot turns left
+--   S_S = Robot stops
  S_FW, S_BW, S_R, S_L, S_S: bool;
+
+ FW_IDLE, BW_IDLE, L_IDLE: bool;
+
+ BW_BUMPER, L_BUMPER, R_BUMPER: bool;
+
 let
+
 force_stop =  (sensor_2 >= 0 and sensor_2 <= 10) or (sensor_3 <= 200);
+
+--Initialise all movement states for the robot so that it begins in a stop state
 init = false;
 init_stop = true;
 
-reset = false -> if (pre count = 305) then true
-		else false;
-
+--State Condition, Reset variable and Counter for the IDLE state
+--IDLE state lasts 355 timesteps
+idle = not (right_bumper_hit or left_bumper_hit or obstacle_detected);
 reset_idle = false -> if (pre count_idle = 355) then true
 		else false;
-
-right_bumper_hit = false -> Switch(sensor_1, reset);  
-left_bumper_hit = false -> Switch(sensor_4, reset);    
-obstacle_detected = false -> Switch(sensor_3 <= 200 , reset_ultra);  
-
-idle = not (right_bumper_hit or left_bumper_hit or obstacle_detected);
-
 count_idle = 0-> if (idle) then Counter(reset_idle) 
 			else if force_stop then pre count_idle
 			else 0;
 
+--State Condition and Counter for the Ultrasonic Obstacle Detection state
+obstacle_detected = false -> Switch(sensor_3 <= 200 , reset_ultra);
+
 count_ultra = 0-> if (obstacle_detected) then Counter(reset_ultra) 
 			else 0;
 
-Value_C = 0 -> if obstacle_detected then 10 else 0;
-
-Clockwise_C = 0 -> if obstacle_detected and count_ultra > 5 and count_ultra < 45 then true else false;
-
-count_bumper = 0-> if (right_bumper_hit or left_bumper_hit) then Counter(reset) 
+--State Condition, Reset variable and Counter for the Bumper Collision state
+--Bumper Collision state lasts 305 timesteps
+right_bumper_hit = false -> Switch(sensor_1, reset);  
+left_bumper_hit = false -> Switch(sensor_4, reset);
+reset_bumper = false -> if (pre count_bumper = 305) then true
+		else false;
+count_bumper = 0-> if (right_bumper_hit or left_bumper_hit) then Counter(reset_bumper) 
 			else if force_stop then pre count_bumper
 			else 0;
 
-S_FW = init -> if  (idle) and (count_idle > 5 and count_idle < 200) then true
+--Sequence of movements for when the robot is in an IDLE state
+--All of the values not covered in the count are when the robot stops.
+FW_IDLE = (idle) and (count_idle > 5 and count_idle < 200);
+BW_IDLE = (idle) and (count_idle > 205 and count_idle < 250);
+L_IDLE = (idle) and (count_idle > 255 and count_idle < 350);
+
+--Sequence of movements for when the robot's bumper are hit
+BW_BUMPER = (right_bumper_hit or left_bumper_hit) and (count_bumper > 5) and (count_bumper < 200);
+L_BUMPER = right_bumper_hit and (count_bumper > 205) and (count_bumper < 300);
+R_BUMPER = left_bumper_hit and (count_bumper > 205) and (count_bumper < 300);
+
+S_FW = init -> if  FW_IDLE then true
 				else false;
 
-S_BW = init -> if ((idle) and (count_idle > 205 and count_idle < 250)) or (((right_bumper_hit or left_bumper_hit) and count_bumper > 5 and count_bumper < 200) and not force_stop) then true
+S_BW = init -> if (BW_IDLE or BW_BUMPER) and not force_stop then true
 				else false;
 
-S_L = init -> if ((idle) and (count_idle > 255 and count_idle < 350)) or (right_bumper_hit and count_bumper > 205 and count_bumper < 300) and not force_stop then true
+S_L = init -> if (L_IDLE or L_BUMPER) and not force_stop then true
 				else false;
 
-S_R = init -> if (left_bumper_hit and count_bumper > 205 and count_bumper < 300) and not force_stop then true
+S_R = init -> if R_BUMPER and not force_stop then true
 				else false;
 		
 S_S = init_stop ->if (right_bumper_hit or left_bumper_hit) and count_bumper < 5  then true
