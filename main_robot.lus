@@ -116,9 +116,18 @@ var init, init_stop: bool;
 	--   S_L = Robot turns left.
 	--   S_S = Robot stops.
 	S_FW, S_BW, S_R, S_L, S_S: bool;
-
+	
+	
+	--Condtions in the IDLE state:
+		--FW_IDLE for the robot to move forward
+		--BW_IDLE = for the robot to move backward
+		--L_IDLE = for the robot to turn left
 	FW_IDLE, BW_IDLE, L_IDLE: bool;
-
+	
+	--Condtions in the state where the robot's bumpers hit an obstacle:
+		--BW_BUMPER = for the robot to move backward
+		--L_BUMPER = for the robot to turn left
+		--R_BUMPER = for the robot to turn right
 	BW_BUMPER, L_BUMPER, R_BUMPER: bool;
 
 let
@@ -144,7 +153,7 @@ let
 
 	-- State Condition and Counter for the Ultrasonic Obstacle Detection state.
 	obstacle_detected = false -> Switch(sensor_3 <= 200 , reset_ultra);
-
+	reset_ultra = false;
 	count_ultra = 0 -> if (obstacle_detected) then Counter(reset_ultra) 
 					else 0;
 
@@ -180,7 +189,7 @@ let
 	R_BUMPER = left_bumper_hit and (count_bumper > 205) and (count_bumper < 300);
 
 
-	S_FW = init -> if FW_IDLE then true
+	S_FW = init -> if FW_IDLE and not force_stop then true
 					else false;
 
 	S_BW = init -> if (BW_IDLE or BW_BUMPER) and not force_stop then true
