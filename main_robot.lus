@@ -312,9 +312,13 @@ let
 count = 0 -> if reset then 0 else pre(count) + 1;
 tel
 
---Switch is used to notify that the either the left or right bumpers have been hit 
---or that an obstacle has been detected by the sensors.
---The switch is reset at the end of the operation's cycle that reacts to each of the disturbances
+--Switch is used to transition between states:
+--While the robot is in IDLE, if:
+	--The left bumpers have been hit 
+	--The right bumpers have been hit
+	--An obstacle has been detected by the sensors.
+--Then their corresponding state is set
+--The switch is eventually reset at the end of the State's cycle, setting back to IDLE
 node Switch(Set, Reset: bool) returns (S: bool);
 let
 S = false -> if (pre S) then not reset else Set;
