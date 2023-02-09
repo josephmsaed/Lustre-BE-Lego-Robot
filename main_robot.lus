@@ -58,10 +58,8 @@ returns (
 	);
 --------------------------------------------------------------------------------
 var _: bool;
- reset_switch: bool;
+ -- state = enumerated value to determines the movement of the robot
  state: int;
- ESTOP: bool;
-
 let
 ---------------------------------------
 
@@ -71,8 +69,6 @@ Clockwise_D = false; Counterclockwise_D = false; Cmd_Position_D = false ; Cmd_Sp
 --Filler value for the movement nodes. Never changes.
 _ = false;
 
-
--- state = enumerated value to determines the movement of the robot
 state = Automata_0( sensor_1, sensor_4, sensor_3,sensor_2);
 
 (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
