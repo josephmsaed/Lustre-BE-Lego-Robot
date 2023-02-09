@@ -230,7 +230,7 @@ let
 	Clockwise_B = true;
 	Counterclockwise_B = false;
 	Value_B = 80;
-tel;
+tel
 
 -- Reversing State Node.
 -- Controls all the outputs related to the two motors in order to make the robot move backward.
@@ -255,7 +255,7 @@ let
 	Clockwise_B = false;
 	Counterclockwise_B = true;
 	Value_B = 40;
-tel;
+tel
 
 -- Turning Left State Node.
 -- Controls all the outputs related to the two motors in order to make the robot move left.
@@ -280,7 +280,7 @@ let
 	Clockwise_B = false;
 	Counterclockwise_B = true;
 	Value_B = 30;
-tel;
+tel
 
 -- Turning Right State Node.
 -- Controls all the outputs related to the two motors in order to make the robot move right.
@@ -305,7 +305,7 @@ let
 	Clockwise_B = true;
 	Counterclockwise_B = false;
 	Value_B = 30;
-tel;
+tel
 
 -- Stop State Node.
 -- Controls all the outputs related to the two motors in order to make the robot full stop.
@@ -329,7 +329,7 @@ let
 	Clockwise_B = false;
 	Counterclockwise_B = false;
 	Value_B = 0;
-tel;
+tel
 
 -- Increments the value of 'count' until it is reset back to 0 with 'reset'.
 node Counter(reset: bool) returns(count: int);
