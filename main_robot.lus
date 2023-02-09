@@ -57,80 +57,25 @@ returns (
 	Clockwise_D : bool; Counterclockwise_D : bool; Cmd_Position_D : bool ; Cmd_Speed_D : bool; Value_D : int; 
 	);
 --------------------------------------------------------------------------------
-
-var _, reset, force_stop: bool;
-var state, count: int;
-var T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L: bool;
+var _: bool;
+ reset_switch: bool;
+ state: int;
+ ESTOP: bool;
 
 let
-
---counter  = 0 -> if (pre(counter) > 99) then 0
---		else pre(counter) + 1;
-
---(Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
---Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B, 
---Value_B) = Stop(_) -> if (counter < 69) then Forward(_)
---			else if (counter >=69 and counter < 79) then Backward(_)
---			else if (counter >=79 and counter <=100)
---			else Stop(_);				
-
-
 ---------------------------------------
--- M1:
--- Normal behavior: FW -> BW -> Right -> FW
--- T_S_FW 10 -> T_FW_S 60 -> T_S_BW 65 -> T_BW_S 85 -> T_S_R 90 -> T_R_S 95
--- transitions from Stop state are not allowed if motor A and B's sensors are not 0
--- M2:
--- if the value of sensor_2 is between 5 and 10, all the transitions to 0 become true, 
--- thus forcing the Stop state to become true no matter what the previous state was
+
+Clockwise_C = false; Counterclockwise_C = false; Cmd_Position_C = false; Cmd_Speed_C = false; Value_C = 0; 
+Clockwise_D = false; Counterclockwise_D = false; Cmd_Position_D = false ; Cmd_Speed_D = false; Value_D =0; 
 
 _ = false;
 
-reset = false -> if pre(count) = 15 then true --99
-		else false;
-count = Counter(reset);
+--sensor_status = SwitchPrototype(reset_switch, sensor_1, sensor_4);
+--sensor_1_persis = Switch(sensor_1, reset_switch);
+ESTOP = false -> if sensor_1 or sensor_4 then true
+					else pre ESTOP;
 
-force_stop = (sensor_2 >= 5 and sensor_2 <= 10);
-
-T_S_FW = false -> if ((pre count = 2) and 
-	(motor_speed_sensor_a = 0 and motor_speed_sensor_b = 0) and 
-	(not force_stop)) 
-		then true
-	else false;
-	
-T_FW_S = false -> if ((pre count = 4) or
-	(force_stop))
-		then true
-	else false;
-	
-T_S_BW = false -> if ((pre count = 6) and 
-	(motor_speed_sensor_a = 0 and motor_speed_sensor_b = 0) and 
-	(not force_stop)) 
-		then true
-	else false;
-	
-T_BW_S = false -> if ((pre count = 8) or
-	(force_stop))
-		then true
-	else false;
-	
-T_S_R = false -> if ((pre count = 12)  and 
-	(motor_speed_sensor_a = 0 and motor_speed_sensor_b = 0) and 
-	(not force_stop)) 
-		then true
-	else false;
-	
-T_R_S = false -> if ((pre count = 14) or
-	(force_stop)) 
-		then true
-	else false;
-
-T_L_S = false -> if (force_stop) then true
-	else false;
-T_S_L = false;
-
-
-state = Automata_1(T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L);
+state = Automata_0( sensor_1, sensor_4, sensor_3,sensor_2);
 
 (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A, Value_A,
 Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B, 
@@ -140,60 +85,73 @@ Value_B) = if state = 0 then Stop(_)
 		else if state = 3 then Right(_)	
 		else if state = 4 then Left(_)
 		else Stop(_);
-		
---%MAIN;
-
-
-tel	
+	tel	
 --------------------------------------------------------------------------------
 	
 
 
 --------------------------------------------------------------------------------
 -- Place other nodes below if needed
-node Automata_1(T_FW_S, T_BW_S, T_R_S, T_L_S, T_S_FW, T_S_BW, T_S_R, T_S_L : bool)
+
+node Automata_0(sensor_1, sensor_4: bool; sensor_3,sensor_2: int)
 returns(state: int);
 
 var init, init_stop: bool;
-var S_FW, S_BW, S_R, S_L, S_S: bool;
-
+ count: int;
+ reset: bool;
+ right_bumper_hit: bool;
+ left_bumper_hit: bool;
+ obstacle: bool;
+ force_stop: bool;
+ S_FW, S_BW, S_R, S_L, S_S: bool;
 let
+force_stop =  (sensor_2 >= 0 and sensor_2 <= 10) or (sensor_3 <= 200);
 init = false;
 init_stop = true;
 
-S_FW = init -> if (pre(S_FW) and T_FW_S) then false
-		else if (pre(S_S) and T_S_FW) then true
-		else pre(S_FW);
-		
-S_BW = init -> if (pre(S_BW) and T_BW_S) then false
-		else if (pre(S_S) and T_S_BW) then true
-		else pre(S_BW);
+reset = false -> if (pre count = 305) then true
+		else false;
 
-S_L = init -> if (pre(S_L) and T_L_S) then false
-		else if pre(S_S) and T_S_L then true
-		else pre(S_L);
+right_bumper_hit = false -> Switch(sensor_1, reset);  
+left_bumper_hit = false -> Switch(sensor_4, reset);    
+obstacle_detected = false -> Switch(sensor_3 <= 200 , reset_ultra);  
 
-S_R = init -> if (pre(S_R) and T_R_S) then false
-		else if pre(S_S) and T_S_R then true
-		else pre(S_R);
-		
-		
-S_S = init_stop -> if (pre(S_S) and (T_S_FW or T_S_BW or T_S_R or T_S_L)) then false	
-		else if ((pre(S_FW) and T_FW_S)
-			or (pre(S_BW) and T_BW_S)
-			or (pre(S_L) and T_L_S)
-			or (pre(S_R) and T_R_S))
-			then true
-		else pre(S_S);		
+count_ultra = 0-> if (obstacle_detected) then Counter(reset_ultra) 
+			else 0;
 
-state = 0 -> if S_S then 0
-	else if S_FW then 1
+Value_C = 0 -> if obstacle_detected then 10 else 0;
+
+Clockwise_C = 0 -> if obstacle_detected and count_ultra > 5 and count_ultra < 45 then true else false;
+
+count_bumper = 0-> if (right_bumper_hit or left_bumper_hit) then Counter(reset) 
+			else if force_stop then pre count_bumper
+			else 0;
+
+S_FW = init -> if  not(right_bumper_hit or left_bumper_hit) and not force_stop then true
+				else false;
+
+S_BW = init -> if ((right_bumper_hit or left_bumper_hit) and count_bumper > 5 and count_bumper < 200) and not force_stop then true
+				else false;
+
+S_L = init -> if (right_bumper_hit and count_bumper > 205 and count_bumper < 300) and not force_stop then true
+				else false;
+
+S_R = init -> if (left_bumper_hit and count_bumper > 205 and count_bumper < 300) and not force_stop then true
+				else false;
+		
+S_S = init_stop ->if (right_bumper_hit or left_bumper_hit) and count_bumper < 5  then true
+				 else if not (S_R or S_FW or S_BW or S_L) or force_stop then true
+				 else false;
+
+state = 0 -> if S_S then 0 -- stop
+	else if S_FW then 1 
 	else if S_BW then 2
 	else if S_R then 3
 	else if S_L then 4
-	else pre(state);
+    else pre(state);
 tel
 
+-- Moving Forward State Node
 node Forward(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
@@ -217,7 +175,7 @@ Counterclockwise_B = false;
 Value_B = 80;
 tel;
 
-
+-- Reversing State Node
 node Backward(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
@@ -241,7 +199,7 @@ Counterclockwise_B = true;
 Value_B = 40;
 tel;
 
-
+-- Turning Left State Node
 node Left(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
@@ -265,7 +223,7 @@ Counterclockwise_B = true;
 Value_B = 30;
 tel;
 
-
+-- Turning Right State Node
 node Right(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
@@ -289,13 +247,12 @@ Counterclockwise_B = false;
 Value_B = 30;
 tel;
 
-
+-- Stop State Node
 node Stop(_: bool)
 returns (
 	Clockwise_A : bool; Counterclockwise_A : bool; Cmd_Position_A : bool ; Cmd_Speed_A : bool; Value_A : int; 
 	Clockwise_B : bool; Counterclockwise_B : bool; Cmd_Position_B : bool ; Cmd_Speed_B : bool; Value_B : int; 
 	);
-
 let
 Cmd_Position_A = false;
 Cmd_Speed_A = true;
@@ -313,22 +270,17 @@ Counterclockwise_B = false;
 Value_B = 0;
 tel;
 
-
+--Counter used to time the transitions between states
 node Counter(reset: bool) returns(count: int);
 let
 count = 0 -> if reset then 0 else pre(count) + 1;
 tel
 
----------------------
-
-node RisingE(x: bool) returns (y: bool);
+--Switch is used to notify that the either the left or right bumpers have been hit 
+--or that an obstacle has been detected by the sensors.
+--The switch is reset at the end of the operation's cycle that reacts to each of the disturbances
+node Switch(Set, Reset: bool) returns (S: bool);
 let
-y = x -> x and (not pre x);
+S = false -> if (pre S) then not reset else Set;
 tel
 
-node Switch( Set, Reset, Init : bool ) returns ( x : bool );
-let
-x = 	if Set then true
-	else if Reset then false
-	else (Init -> pre x);
-tel
