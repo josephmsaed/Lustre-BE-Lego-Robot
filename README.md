@@ -21,6 +21,7 @@ The goal of this lab is to program using the Lustre language a robot, which can 
 >Note: Clockwise\_M and Counterclockwise\_M should not be true at the same time for the same motor. Similarly for Cmd\_Speed\_M and Cmd\_Position\_M.
 
 ## _Used Nodes:_
+"The main node of the system, covers all the behaviors of the robot."
 ```
 node main_robot (
                 sensor_1 : bool ;
@@ -38,8 +39,11 @@ returns (
 	Clockwise_C : bool; Counterclockwise_C : bool; Cmd_Position_C : bool ; Cmd_Speed_C : bool; Value_C : int; 
 	Clockwise_D : bool; Counterclockwise_D : bool; Cmd_Position_D : bool ; Cmd_Speed_D : bool; Value_D : int; 
 	);
-"The main node of the system, covers all the behaviors of the robot."
 ```
+<br/><br/>
+
+"The principal node that takes into account all the sensors' input to force a state on the robot,
+thus controlling its movements."
 ```
 node Automata_0(
                 sensor_1, 
@@ -48,60 +52,84 @@ node Automata_0(
                 sensor_2: int
                 )
 returns(state: int);
-"The principal node that takes into account all the sensors' input to force a state on the robot, thus controlling its movements."
+
 ```
+<br/><br/>
+
+"Controls all the outputs related to the two motors in order to make the robot move forward."
 ```
-node Switch(Set, Reset: bool) returns (S: bool);
+node Forward(_: bool)
+returns (
+        Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
+        Value_A : int; 
+        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
+        Value_B : int
+        );
+```
+<br/><br/>
+
+"Controls all the outputs related to the two motors in order to make the robot move backward."
+```
+node Backward(_: bool)
+returns (
+        Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
+        Value_A : int; 
+        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
+        Value_B : int
+        );
+```
+<br/><br/>
+
+"Controls all the outputs related to the two motors in order to make the robot move left."
+```
+node Left(_: bool)
+returns (
+        Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
+        Value_A : int; 
+        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
+        Value_B : int
+        );
+```
+<br/><br/>
+
+"Controls all the outputs related to the two motors in order to make the robot move right."
+```
+node Right(_: bool)
+returns (
+        Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
+        Value_A : int; 
+        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
+        Value_B : int
+        );
+```
+<br/><br/>
+
+"Controls all the outputs related to the two motors in order to make the robot full stop."
+```
+node Stop(_: bool)
+returns (
+        Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
+        Value_A : int; 
+        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
+        Value_B : int
+        );
+```
+<br/><br/>
+
 "Perservs the true value of 'Set' until 'Reset' is becomes true.
 It is used to keep the boolean values of the different sensors as true during a whole behavior cycle."
 ```
+node Switch(
+        Set, 
+        Reset: bool
+        )
+returns (S: bool);
 ```
-node Counter(reset: bool) returns(count: int);
+<br/><br/>
+
 "Increments the output continuously until 'reset'= true sets it back to 0 "
 ```
-
-```
-node Forward(_: bool)
-returns (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
-        Value_A : int; 
-        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
-        Value_B : int);
-"Controls all the outputs related to the two motors in order to make the robot move forward."
-```
-
-```
-node Backward(_: bool)
-returns (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
-        Value_A : int; 
-        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
-        Value_B : int);
-"Controls all the outputs related to the two motors in order to make the robot move backward."
-```
-
-```
-node Left(_: bool)
-returns (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
-        Value_A : int; 
-        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
-        Value_B : int);
-"Controls all the outputs related to the two motors in order to make the robot move left."
-```
-
-```
-node Right(_: bool)
-returns (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
-        Value_A : int; 
-        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
-        Value_B : int);
-"Controls all the outputs related to the two motors in order to make the robot move right."
-```
-
-```
-node Stop(_: bool)
-returns (Clockwise_A, Counterclockwise_A, Cmd_Position_A, Cmd_Speed_A : bool;
-        Value_A : int; 
-        Clockwise_B, Counterclockwise_B, Cmd_Position_B, Cmd_Speed_B : bool; 
-        Value_B : int);
-"Controls all the outputs related to the two motors in order to make the robot full stop."
+node Counter(reset: bool)
+returns(count: int);
 ```
 

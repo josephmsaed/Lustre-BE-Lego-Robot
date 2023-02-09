@@ -164,7 +164,7 @@ let
 
 	
 	---------------------------------------------------------
-	-------------- Final Sequence of movements --------------
+	-------------- Final Sequences of movements --------------
 	---------------------------------------------------------
 	-- IDLE:
 	-- Sequence of movements for when the robot is in an IDLE state.
@@ -196,7 +196,8 @@ let
 					else if not (S_R or S_FW or S_BW or S_L) or force_stop then true
 					else false;
 
-	-- the only output that dictactes the movement of the wheels in the MAIN.
+
+	-- The only output that dictactes the movement of the wheels in the MAIN.
 	state = 0 -> if S_S then 0 -- stop
 				else if S_FW then 1 -- forward
 				else if S_BW then 2 -- backward
@@ -204,6 +205,7 @@ let
 				else if S_L then 4 -- left
 				else pre(state);
 tel
+
 
 -- Moving Forward State Node
 -- Controls all the outputs related to the two motors in order to make the robot move forward.
