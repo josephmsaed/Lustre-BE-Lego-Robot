@@ -18,7 +18,7 @@ The goal of this lab is to program using the Lustre language a robot, which can 
  - **Cmd\_Speed\_M:** (bool) set to true if you want to control the motor's speed, false otherwise. 
  - **Value\_M:** (int) the desired motor's position or speed based on the values of the previous 2 outputs.
  
->Note: Clockwise\_M and Counterclockwise\_M should not be true at the same time for the same motor. Similarly for Cmd\_Speed\_M and Cmd\_Position\_M.
+>**Note:** Clockwise\_M and Counterclockwise\_M should not be true at the same time for the same motor. Similarly for Cmd\_Speed\_M and Cmd\_Position\_M.
 
 ## _Used Nodes:_
 "The main node of the system, covers all the behaviors of the robot."
